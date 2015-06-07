@@ -1,0 +1,2 @@
+class FileSuffixError(Exception):
+    pass
