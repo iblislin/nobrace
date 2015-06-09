@@ -72,7 +72,7 @@ class Converter:
             except IndexError:
                 return
 
-        def semicolom_complete(line: str) -> str:
+        def semicolon_complete(line: str) -> str:
             _l = line.rstrip()
             if _l[-1] == ':':
                 return _l[:-1] + '\n'
@@ -92,7 +92,7 @@ class Converter:
                     print(line, end='')
                 continue
 
-            _line = semicolom_complete(line)
+            _line = semicolon_complete(line)
             complete_brace(indent, cur_indent)
             print(_line, end='', sep=', ')
 
