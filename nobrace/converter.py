@@ -1,6 +1,9 @@
 import re
 
+from collections import Counter
+
 from .exceptions import FileSuffixError
+from .stack import IndentStack
 
 
 class Converter:
@@ -40,9 +43,62 @@ class Converter:
         return open(self._output_file)
 
     def convert(self):
+        indent_stack = IndentStack([''])
+        blankline_stack = Counter()
+
+
+        def push_blankline(indent):
+            blankline_stack[indent] = blankline_stack.get(indent, 0) + 1
+
+        def pop_blankline(indent):
+            if blankline_stack.get(indent) is None:
+                return
+            print('\n' * blankline_stack.pop(indent), end='')
+
+        def complete_brace(indent, cur_indent):
+            if indent == cur_indent:
+                pop_blankline(indent)
+                return
+
+            if len(indent) > len(cur_indent):
+                print(indent_stack.push(indent))
+            elif len(indent) < len(cur_indent):
+                print(indent_stack.pop())
+            else:
+                pop_blankline(cur_indent)
+
+            try:
+                complete_brace(indent, indent_stack.top)
+            except IndexError:
+                return
+
+        def semicolom_complete(line: str) -> str:
+            _l = line.rstrip()
+            if _l[-1] == ':':
+                return _l[:-1] + '\n'
+            return _l + ';\n'
+
         for line in self.file.readlines():
-            indent = re.match('^[\s]+', line)
-            print(indent, line, end='')
+            indent_match = re.match('^([ \t]+)[\S]+', line)
+            cur_indent = indent_stack[-1]
+
+            if indent_match:
+                indent = indent_match.group(1)
+            else:
+                indent = None
+                if cur_indent:
+                    push_blankline(cur_indent)
+                else:
+                    print(line, end='')
+                continue
+
+            _line = semicolom_complete(line)
+            complete_brace(indent, cur_indent)
+            print(_line, end='', sep=', ')
+
+        # handle eol
+        print('{}}}'.format(indent_stack[-2]))
+
 
     def write(self):
         pass
