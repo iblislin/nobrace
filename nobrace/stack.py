@@ -1,3 +1,6 @@
+from collections import Counter
+
+
 class Stack:
     def __init__(self, iterable):
         self.ls = list(iterable)
@@ -40,3 +43,11 @@ class IndentStack(Stack):
 
     def __getitem__(self, index):
         return self.ls[index]
+
+
+class LineCounter(Counter):
+    def push(self, key):
+        '''
+        Increase key by one.
+        '''
+        self[key] += 1
